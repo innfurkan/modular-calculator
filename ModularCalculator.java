@@ -1,119 +1,288 @@
-import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Scanner;
 
-public class Modula {
-    public static void main(String[] args){
+public class ModularCalculator {
+
+    public static void main(String[] args) {
         Scanner scnr = new Scanner(System.in);
 
-        System.out.println("Modular Calculator");
+        System.out.println("============================");
+        System.out.println("     Modular Calculator");
+        System.out.println("============================");
 
-        int convertA = 0;
+        boolean running = true;
 
-        String userAnswer = "";
-        String a; // dividend
-        int c; // divisor
+        while (running) {
+            ArrayList<Integer> savedValues = new ArrayList<>();
+            boolean calculationSuccessful = false;
 
-        int b = 0; // base
-        int e = 0; // exponent
-        int calExpo = 0; // it will use instead of e, to not lose real e
-        int result = 1; // remainder
-        int resultTwo = 1;
+            System.out.print("\nEnter a number or exponential expression ");
+            System.out.print("(examples: 17 or 5^13): ");
 
-        int i; // variable for 'for' method
-        int f = 1;
+            String expression = scnr.nextLine().trim();
 
-        int twoExponent = 0; // Convert to the exponent in the form of a power of two
+            System.out.print("Enter modulus c: ");
+            String modulusInput = scnr.nextLine().trim();
 
-        boolean checkStatement = false; // check the dividend types
-        boolean statement = true;
+            try {
+                int c = Integer.parseInt(modulusInput);
+                if (c <= 0) {
+                    System.out.println("Error: modulus must be greater than 0.");
+                    continue;
+                }
+                // Exponential modular calculation
+                if (expression.contains("^")) {
+                    String[] parts = expression.split("\\^");
+                    if (parts.length != 2) {
+                        System.out.println("Invalid exponential expression.");
+                        continue;
+                    }
+                    int b = Integer.parseInt(parts[0].trim());
+                    int e = Integer.parseInt(parts[1].trim());
+                    if (e < 0) {
+                        System.out.println("Negative exponents are not supported yet.");
+                        continue;
+                    }
 
-        while(statement){
-            System.out.print("Enter the values in a mod(c) type or b^e mod(c) type");
-            System.out.println(" (Must be in same line)");
-            System.out.print("Enter dividend value (a): ");
-            a = scnr.nextLine(); // dividend
-            System.out.print("Enter divisor value (c): ");
-            c = scnr.nextInt(); // divisor
+                    int result = modularExponentiation(b, e, c);
+                    savedValues = learnSave(b, e, c, result);
+                    calculationSuccessful = true;
+                    System.out.println(b + "^" + e + " mod(" + c + ") = " + result);
+                }
 
-            twoExponent = 0;
-            b = 0; // base
-            e = 0; // exponent
-            calExpo = 0; // it will use instead of e, to not lose real e
-            result = 1; // remainder
-            resultTwo = 1;
+                // Normal modulo calculation
+                else {
+                    int a = Integer.parseInt(expression);
+                    int result = Math.floorMod(a, c);
+                    savedValues = learnSave(a, -1, c, result);
+                    calculationSuccessful = true;
+                    System.out.println(a + " mod(" + c + ") = " + result);
+                }
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter integer values.");
+            }
 
-            // check is the dividend in basic or complex form
-            if(a.contains("^")){
-                for(i = 0; i< a.length(); ++i){
-                    if(a.charAt(i) == '^'){
-                        e = Integer.parseInt(a.substring(i+1, a.length()));
-                        b = Integer.parseInt(a.substring(0, i));
-                        calExpo = e;
-                        checkStatement = true;
-                        //System.out.println("Base: " + b + "\nExponent: " + e);
+            if(calculationSuccessful) {
+                System.out.println("Would you like to learn how to solve this problem? Y/N");
+                boolean learningShow = checkingAnswer(scnr);
+                if (learningShow) {
+                    if (savedValues.get(1) < 0) {
+                        learningSimulationBasic(savedValues);
+                    }
+                    else {
+                        learningSimulationComplex(savedValues);
                     }
                 }
             }
-            else {
-                convertA = Integer.parseInt(a);
-                if (c > convertA){
-                    System.out.println("Divisor less than dividend -> " + a + " mod(" + c + ") = " + a);
-                }
-                else if (c==convertA){System.out.println("Divisor equal to dividend -> " + a +
-                        " mod(" + c + ") = 0");}
-                else{
-                    result = convertA % c;
-                    System.out.println("Divisor greater than dividend -> " + a +
-                            " mod(" + c + ") = " + result);
-                }
-            }
+            System.out.print("\nDo you want to continue? Y/N: ");
+            running = checkingAnswer(scnr);
 
-            if(checkStatement){
-                //System.out.println("Complete task 1");
-                while(e>Math.pow(2,twoExponent+1)){
-                    twoExponent++;
-                }
-                for(i=twoExponent; i>=0; --i){
-                    System.out.println("Task 5 Completed || i = " + i);
-                    if(Math.pow(2,i) <= calExpo){
-                        resultTwo = (int) (Math.pow(b,Math.pow(2,1)) % c);
-                        for(f=1; f<=i; ++f){
-                            resultTwo %= c;
-                            resultTwo = (int) Math.pow(resultTwo,2);
-                            System.out.println("Process: " + Math.sqrt(resultTwo));
-                        }
-                        calExpo -= Math.pow(2,i);
-                        resultTwo = (int)Math.sqrt(resultTwo);
-                        result *= resultTwo % c;
-                        result %= c;
-                        System.out.println("Task 6 Completed (" + (twoExponent - i) + ") || Result: " + result);
-                    }
-                }
-                //System.out.println("Result: " + result);
-                //result = result % c;
-            }
-
-            System.out.println("Remainder: " + result);
-            //System.out.println("Result 2: " + (Math.pow(b,Math.pow(2,1)) % c));
-            scnr.nextLine();
-            System.out.println("Do you want to continue? Y/N");
-            userAnswer = scnr.nextLine();
-
-            if(userAnswer.equalsIgnoreCase("Y") || userAnswer.equalsIgnoreCase("Yes")){
-                statement = true;
-                System.out.println("");
-            }
-            else if(userAnswer.equalsIgnoreCase("N") || userAnswer.equalsIgnoreCase("No")){
-                statement = false;
-            }
-            else{
-                System.out.println("");
-                System.out.println("Invalid input");
-                System.out.println("Do you want to continue? Y/N");
-                userAnswer = scnr.nextLine();
-            }
         }
+        System.out.println("\nModular Calculator closed.");
+        scnr.close();
+    }
 
+    public static int modularExponentiation(int base, int exponent, int modulus) {
 
+        long result = 1 % modulus;
+        long currentBase = Math.floorMod(base, modulus);
+
+        int currentExponent = exponent;
+
+        while (currentExponent > 0) {
+            // If exponent is odd
+            if (currentExponent % 2 == 1) {result = (result * currentBase) % modulus;}
+            // Square the base
+            currentBase = (currentBase * currentBase) % modulus;
+            // Divide exponent by 2
+            currentExponent /= 2;
+        }
+        return (int) result;
+    }
+
+    public static boolean checkingAnswer(Scanner scnr) {
+
+        for (int attempt = 0; attempt < 2; attempt++) {
+            String answer = scnr.nextLine().trim();
+            if (answer.equalsIgnoreCase("Y") ||
+                    answer.equalsIgnoreCase("Yes")) {return true;}
+            if (answer.equalsIgnoreCase("N") ||
+                    answer.equalsIgnoreCase("No")) {return false;}
+            if (attempt == 0) {System.out.println("Invalid input. Please enter Y or N:");}
+        }
+        System.out.println("Invalid response.");
+        return false;
+    }
+
+    public static ArrayList<Integer> learnSave(int b, int e, int c, int result) {
+        ArrayList<Integer> savedValues = new ArrayList<>();
+        savedValues.add(b);
+        savedValues.add(e);
+        savedValues.add(c);
+        savedValues.add(result);
+        return savedValues;
+    }
+
+    public static void learningSimulationBasic(ArrayList<Integer> savedValues) {
+        int a = savedValues.get(0);
+        int c = savedValues.get(2);
+        int result = savedValues.get(3);
+
+        int quotient = Math.floorDiv(a, c);
+
+        System.out.println("\n============================");
+        System.out.println("       LEARNING MODE");
+        System.out.println("============================");
+
+        System.out.println("\nProblem: (Basic)");
+        System.out.println(a + " mod(" + c + ")");
+
+        System.out.println("\nStep 1: Divide " + a + " by " + c + ".");
+
+        System.out.println(
+                a + " = (" + c + " * " + quotient + ") + " + result
+        );
+
+        System.out.println("\nStep 2: Find the remainder.");
+
+        System.out.println(
+                "The remainder after dividing " + a +
+                        " by " + c + " is " + result + "."
+        );
+
+        System.out.println("\nTherefore:");
+        System.out.println(a + " mod(" + c + ") = " + result);
+        System.out.println("============================");
+    }
+
+    public static void learningSimulationComplex(ArrayList<Integer> savedValues) {
+
+        int b = savedValues.get(0);
+        int e = savedValues.get(1);
+        int c = savedValues.get(2);
+        int finalResult = savedValues.get(3);
+
+        long result = 1 % c;
+        long currentBase = Math.floorMod(b, c);
+        int currentExponent = e;
+
+        int step = 1;
+
+        System.out.println("\n============================");
+        System.out.println("       LEARNING MODE");
+        System.out.println("============================");
+
+        System.out.println("\nProblem:");
+        System.out.println(
+                b + "^" + e + " mod(" + c + ")"
+        );
+
+        System.out.println(
+                "\nExponent " + e + " in binary is " +
+                        Integer.toBinaryString(e)
+        );
+
+        System.out.println(
+                "\nWe will use binary modular exponentiation."
+        );
+
+        System.out.println(
+                "Starting result = " + result
+        );
+
+        System.out.println(
+                "Starting base = " + b +
+                        " mod(" + c + ") = " + currentBase
+        );
+
+        while (currentExponent > 0) {
+
+            System.out.println("\n----------------------------");
+            System.out.println("Step " + step);
+            System.out.println("----------------------------");
+
+            System.out.println(
+                    "Current exponent = " + currentExponent
+            );
+
+            System.out.println(
+                    "Current base = " + currentBase
+            );
+
+            System.out.println(
+                    "Current result = " + result
+            );
+
+            if (currentExponent % 2 == 1) {
+
+                System.out.println(
+                        "\n" + currentExponent +
+                                " is odd, so multiply the result by the current base."
+                );
+
+                long oldResult = result;
+
+                result = (result * currentBase) % c;
+
+                System.out.println(
+                        "result = (" +
+                                oldResult + " * " +
+                                currentBase + ") mod(" +
+                                c + ")"
+                );
+
+                System.out.println(
+                        "result = " + result
+                );
+            }
+
+            else {
+
+                System.out.println(
+                        "\n" + currentExponent +
+                                " is even, so we do not multiply it into the result."
+                );
+            }
+
+            long oldBase = currentBase;
+
+            currentBase =
+                    (currentBase * currentBase) % c;
+
+            System.out.println(
+                    "\nSquare the current base:"
+            );
+
+            System.out.println(
+                    "base = (" +
+                            oldBase + " * " +
+                            oldBase + ") mod(" +
+                            c + ")"
+            );
+
+            System.out.println(
+                    "base = " + currentBase
+            );
+
+            int oldExponent = currentExponent;
+
+            currentExponent /= 2;
+
+            System.out.println(
+                    "\nDivide the exponent by 2:"
+            );
+
+            System.out.println(
+                    oldExponent + " / 2 = " +
+                            currentExponent
+            );
+
+            step++;
+        }
+        System.out.println("\n============================");
+        System.out.println("Final Answer:");
+        System.out.println(b + "^" + e + " mod(" + c + ") = " + finalResult);
+        System.out.println("============================");
     }
 }
